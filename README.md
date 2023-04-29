@@ -1,1 +1,1 @@
-# Lirik_MP3-_player
+# Liryc_MP3_player
