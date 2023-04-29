@@ -16,7 +16,6 @@ pygame.mixer.init()
 def print_info():
     Label(text=get_flags('songsinplay'), background='salmon', foreground='white', width=3,
           font=('Times', '6')).place(x=375, y=161)
-    pass
 
 
 def set_back_song():
