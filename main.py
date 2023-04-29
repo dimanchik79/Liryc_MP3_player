@@ -30,13 +30,8 @@ def set_back_song():
     if count_in_tree == -1:
         count_in_tree = len(song) - 1
     set_flags("song_id", song[count_in_tree][7])
-    try:
-        if win_add.state() == 'normal':
-            tree.selection_set(str(song[count_in_tree][7]))
-    except TclError:
-        pass
-    except NameError:
-        pass
+    if get_flags("addplay") == 1:
+        tree.selection_set(str(song[count_in_tree][7]))
     pygame.mixer.music.unload()
     set_flags('music_play', 0)
     play_music()
@@ -54,13 +49,8 @@ def next_song():
     if count_in_tree == len(song):
         count_in_tree = 0
     set_flags("song_id", song[count_in_tree][7])
-    try:
-        if win_add.state() == 'normal':
-            tree.selection_set(str(song[count_in_tree][7]))
-    except TclError:
-        pass
-    except NameError:
-        pass
+    if get_flags("addplay") == 1:
+        tree.selection_set(str(song[count_in_tree][7]))
     pygame.mixer.music.unload()
     set_flags('music_play', 0)
     play_music()
@@ -147,15 +137,10 @@ def continue_play_music():
 def play_time_duration():
     while get_time(pygame.mixer.music.get_pos()) != get_flags('end_duration'):
         pygame.mixer.music.set_volume(volume_scale.get() / 100)
-        try:
-            if win_add.state() == 'normal':
-                tree.tag_configure('green2', foreground='green2')
-                tree.item(get_flags("song_id"), tag='green2')
-                tree.set(get_flags("song_id"), 1, get_time(pygame.mixer.music.get_pos()))
-        except TclError:
-            pass
-        except NameError:
-            pass
+        if get_flags("addplay") == 1:
+            tree.tag_configure('green2', foreground='green2')
+            tree.item(get_flags("song_id"), tag='green2')
+            tree.set(get_flags("song_id"), 1, get_time(pygame.mixer.music.get_pos()))
         progress.config(value=pygame.mixer.music.get_pos())
         progress.update()
         label_time.config(text=get_time(pygame.mixer.music.get_pos()), fg="black")
@@ -377,12 +362,13 @@ def delete_selected(treelist):
 
 def add_playlist(parrent):
     global win_add, tree
+    set_flags("addplay", 1)
     addplayist_button.config(state=DISABLED)
     win_add = Toplevel(parrent)
     win_add.config(background='black')
     win_add.title("СПИСКОК ВОСПРОИЗВЕДЕНИЯ")
     win_add.protocol("WM_DELETE_WINDOW", lambda: (addplayist_button.config(state=ACTIVE, activebackground="black"),
-                                                  win_add.destroy()))
+                                                  set_flags("addplay", 0), win_add.destroy()))
     position = parrent.geometry()
     dx = position[position.index('+') + 1:][0:position[position.index('+') + 1:].index("+")]
     dy = position[position.index('+') + 1:][position[position.index('+') + 1:].index("+") + 1:]
@@ -485,6 +471,7 @@ if __name__ == "__main__":
     set_flags('music_play', 0)
     set_flags('first_', 0)
     set_flags('quit', 0)
+    set_flags("addplay", 0)
     CURSOR.execute("SELECT * FROM current")
     rows = CURSOR.fetchall()
     set_flags("songsinplay", len(rows))
@@ -553,5 +540,5 @@ if __name__ == "__main__":
     print_info()
     root.resizable(False, False)
     root.focus_force()
-    add_playlist(root)
+    # add_playlist(root)
     root.mainloop()
