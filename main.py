@@ -147,10 +147,6 @@ def continue_play_music():
 def play_time_duration():
     while get_time(pygame.mixer.music.get_pos()) != get_flags('end_duration'):
         pygame.mixer.music.set_volume(volume_scale.get() / 100)
-        if get_flags("quit") == 1:
-            pygame.mixer.music.unload()
-            print("bzbz")
-            root.destroy()
         try:
             if win_add.state() == 'normal':
                 tree.tag_configure('green2', foreground='green2')
@@ -399,24 +395,34 @@ def add_playlist(parrent):
     label_playlist.config(font="Courier 9 bold", foreground='yellow')
     label_playlist.pack(anchor=N)
     ToolTip(label_playlist, msg=f"{get_flags('playlist')}", follow=False)
+
+    frame_two = Frame(win_add, height=332, width=392)
+    frame_two.place(x=1, y=25)
+
     columns = ("name_song", "time_song")
-    tree = ttk.Treeview(win_add, name="tree",  columns=columns, show="headings", height=15, padding=5)
+    tree = ttk.Treeview(frame_two, name="tree",  columns=columns, show="headings", height=15, padding=5)
     ttk.Style().configure("Treeview", background="black", foreground="#BAF300", fieldbackground="black")
-    tree.pack(anchor=CENTER, fill=X)
+    tree.pack(side=LEFT)
     tree.heading("name_song", text="Наименование", anchor=W)
     tree.heading("time_song", text="Время", anchor=W)
-    tree.column("#1", stretch=NO, width=330, anchor=W)
+    tree.column("#1", stretch=NO, width=310, anchor=W)
     tree.column("#2", stretch=NO, width=50, anchor=E)
     tree.bind("<Return>", keypress_tree_change_song)
     tree.bind("<KP_Enter>", keypress_tree_change_song)
     tree.bind("<KP_Enter>", keypress_tree_change_song)
     tree.bind("<Double-ButtonPress-1>", keypress_tree_change_song)
+    scrollbar = Scrollbar(frame_two, orient=VERTICAL, command=tree.yview)
+    tree["yscrollcommand"] = scrollbar.set
+    scrollbar.place(y=0, x=374)
+    scrollbar.pack(side="right", fill="y")
+
     update_playlist(tree)
+
     addsonginplaylistpng = PhotoImage(file="IMG/add_songs.png")
     addpsonginlayist_button = Button(win_add, image=addsonginplaylistpng, borderwidth=0, background='black',
                                      activebackground='black', command=lambda: add_song_in_playlist(tree))
     addpsonginlayist_button.place(x=5, y=363)
-    ToolTip(addpsonginlayist_button, msg='Добавить песни в список воспроизведения', follow=False)
+    ToolTip(addpsonginlayist_button, msg='Добавить песни из файлов на ваших дисках', follow=False)
 
     deleteselectpng = PhotoImage(file="IMG/delete.png")
     deleteselect_button = Button(win_add, image=deleteselectpng, background='black', borderwidth=0,
@@ -427,7 +433,7 @@ def add_playlist(parrent):
     addplaylist_button = Button(win_add, image=addplaylistpng, background='black', borderwidth=0,
                                 activebackground='black', command=lambda: open_playlist(win_add, tree, label_playlist))
     addplaylist_button.place(x=323, y=363)
-    ToolTip(addplaylist_button, msg='Добавить в текущий список из другого списка', follow=False)
+    ToolTip(addplaylist_button, msg='Добавить другой список или из другого списка', follow=False)
     saveplaylistpng = PhotoImage(file="IMG/save_playlist.png")
     saveplaylist_button = Button(win_add, image=saveplaylistpng, background='black', borderwidth=0,
                                  activebackground='black', command=lambda: save_playlist(win_add, label_playlist))
@@ -464,10 +470,7 @@ def setvolume(volumescale):
 
 
 def exit_programm():
-    if get_flags('first_') == 1:
-        root.destroy()
-    set_flags('quit', 1)
-    play_music()
+    root.destroy()
 
 
 if __name__ == "__main__":
