@@ -19,38 +19,42 @@ def print_info():
 
 
 def set_back_song():
-    tree.tag_configure('yellow', foreground="#BAF300")
-    tree.item(get_flags("song_id"), tag='yellow')
-    tree.set(get_flags("song_id"), 1, get_flags("end_duration"))
-    tree.update()
     CURSOR.execute("SELECT * FROM current")
     song = CURSOR.fetchall()
+    if not song:
+        return
     count_in_tree = get_flags('count')
     count_in_tree -= 1
     if count_in_tree == -1:
         count_in_tree = len(song) - 1
-    set_flags("song_id", song[count_in_tree][7])
     if get_flags("addplay") == 1:
+        tree.tag_configure('yellow', foreground="#BAF300")
+        tree.item(get_flags("song_id"), tag='yellow')
+        tree.set(get_flags("song_id"), 1, get_flags("end_duration"))
+        tree.update()
         tree.selection_set(str(song[count_in_tree][7]))
+    set_flags("song_id", song[count_in_tree][7])
     pygame.mixer.music.unload()
     set_flags('music_play', 0)
     play_music()
 
 
 def next_song():
-    tree.tag_configure('yellow', foreground="#BAF300")
-    tree.item(get_flags("song_id"), tag='yellow')
-    tree.set(get_flags("song_id"), 1, get_flags("end_duration"))
-    tree.update()
     CURSOR.execute("SELECT * FROM current")
     song = CURSOR.fetchall()
+    if not song:
+        return
     count_in_tree = get_flags('count')
     count_in_tree += 1
     if count_in_tree == len(song):
         count_in_tree = 0
-    set_flags("song_id", song[count_in_tree][7])
     if get_flags("addplay") == 1:
+        tree.tag_configure('yellow', foreground="#BAF300")
+        tree.item(get_flags("song_id"), tag='yellow')
+        tree.set(get_flags("song_id"), 1, get_flags("end_duration"))
+        tree.update()
         tree.selection_set(str(song[count_in_tree][7]))
+    set_flags("song_id", song[count_in_tree][7])
     pygame.mixer.music.unload()
     set_flags('music_play', 0)
     play_music()
@@ -89,6 +93,8 @@ def play_music():
         return
     CURSOR.execute("SELECT * FROM current")
     song = CURSOR.fetchall()
+    if not song:
+        return
     row = 0
     for count_song in range(0, len(song)):
         if song[count_song][7] == get_flags('song_id'):
@@ -439,6 +445,8 @@ def add_playlist(parrent):
 
 
 def keypress_tree_change_song(event):
+    if tree.selection() == ():
+        return
     tree.tag_configure('yellow', foreground="#BAF300")
     tree.item(get_flags("song_id"), tag='yellow')
     tree.set(get_flags("song_id"), 1, get_flags("end_duration"))
