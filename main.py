@@ -305,6 +305,10 @@ def open_playlist(parent, tree_table, label):
     dx = position[position.index('+') + 1:][0:position[position.index('+') + 1:].index("+")]
     dy = position[position.index('+') + 1:][position[position.index('+') + 1:].index("+") + 1:]
     shift = int(dy)
+    if (805 + int(dx)) > root.winfo_screenwidth():
+        dx = str(int(dx) - 1205)
+    if shift < 0:
+        shift = int(dy)
     win_playlists.geometry(f"310x400+{400 + int(dx)}+{shift}")
     win_playlists.config(background='black')
     win_playlists.title("ВЫБОР СПИСКА ВОСПРОИЗВЕДЕНИЯ")
@@ -379,6 +383,10 @@ def add_playlist(parrent):
     dx = position[position.index('+') + 1:][0:position[position.index('+') + 1:].index("+")]
     dy = position[position.index('+') + 1:][position[position.index('+') + 1:].index("+") + 1:]
     shift = int(dy) - 200
+    if (805 + int(dx)) > root.winfo_screenwidth():
+        dx = str(int(dx) - 805)
+    if shift < 0:
+        shift = int(dy)
     win_add.geometry(f"394x400+{405 + int(dx)}+{shift}")
     text = f"Название: {get_flags('playlist')}" \
         if len(f"Название: {get_flags('playlist')}") < 55 else f"Название: " \
