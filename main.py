@@ -442,7 +442,6 @@ def erase_selected(root, treelist):
     for row in rows:
         CURSOR.execute(f"DELETE FROM current WHERE id = {row[7]}")
     BASE_BD.commit()
-
     set_flags('first_', 0)
     set_flags('end_duration', "00:00:00")
     set_flags('count', 0)
@@ -482,10 +481,8 @@ def add_playlist(parrent):
     label_playlist.config(font="Courier 9 bold", foreground='yellow')
     label_playlist.pack(anchor=N)
     ToolTip(label_playlist, msg=f"{get_flags('playlist')}", follow=False)
-
     frame_two = Frame(win_add, height=332, width=392)
     frame_two.place(x=1, y=25)
-
     columns = ("name_song", "time_song")
     tree = ttk.Treeview(frame_two, name="tree",  columns=columns, show="headings", height=15, padding=5)
     ttk.Style().configure("Treeview", background="black", foreground="#BAF300", fieldbackground="black")
@@ -529,7 +526,6 @@ def add_playlist(parrent):
                                  activebackground='black', command=lambda: save_playlist(win_add, label_playlist))
     saveplaylist_button.place(x=358, y=363)
     ToolTip(saveplaylist_button, msg='Сохранить список воспроизведения', follow=False)
-
     CURSOR.execute(f"SELECT * FROM current WHERE id = {get_flags('song_id')}")
     row = CURSOR.fetchone()
     if row is not None:
@@ -538,7 +534,6 @@ def add_playlist(parrent):
     win_add.resizable(False, False)
     if get_flags("first_") == 1:
         play_music()
-    tree.focus_set()
     win_add.wait_window()
 
 
@@ -602,7 +597,6 @@ if __name__ == "__main__":
     root.resizable(False, False)
     root.config(background="black")
     root.protocol("WM_DELETE_WINDOW", exit_programm)
-
     ttk.Label(text="volume", background="black", foreground="green").place(y=170, x=195-43)
     volume_scale = Scale(root, bg="black", foreground='yellow', orient=HORIZONTAL, font=('Algerian', '8'),
                          width=10, from_=1, to=100, showvalue=False, activebackground="black")
@@ -610,31 +604,26 @@ if __name__ == "__main__":
     volume_scale.set(value=50)
     frame_one = Frame(name="main", width=390, height=153, borderwidth=2, relief=GROOVE, bg="LightSkyBlue3", bd=2,)
     frame_one.place(x=5, y=5)
-
     stoppng = PhotoImage(file="IMG/pause.png")
     stop_button = Button(root, image=stoppng, borderwidth=0, background="black", activebackground="black",
                          command=pause_music)
     stop_button.place(x=5, y=163)
     ToolTip(stop_button, msg='Пауза', follow=False)
-
     playpng = PhotoImage(file="IMG/play.png")
     play_button = Button(root, image=playpng, borderwidth=0, background="black", activebackground="black",
                          command=play_music)
     play_button.place(x=42, y=163)
     ToolTip(play_button, msg='Воспроизведение', follow=False)
-
     previouspng = PhotoImage(file="IMG/previous.png")
     previous_button = Button(root, image=previouspng, borderwidth=0, background="black", activebackground="black",
                              command=set_back_song)
     previous_button.place(x=79, y=163)
     ToolTip(previous_button, msg='Предыдущий трек', follow=False)
-
     nextpng = PhotoImage(file="IMG/next.png")
     next_button = Button(root, image=nextpng, borderwidth=0, background="black", activebackground="black",
                          command=next_song)
     next_button.place(x=116, y=163)
     ToolTip(next_button, msg=f"Следующий трек", follow=False)
-
     settingspng = PhotoImage(file="IMG/settings.png")
     settings_button = Button(root, image=settingspng, borderwidth=0, background="black", activebackground="black")
     settings_button.place(x=363 - 45, y=163)
@@ -644,10 +633,8 @@ if __name__ == "__main__":
                                command=lambda: add_playlist(root))
     addplayist_button.place(x=355, y=163)
     ToolTip(addplayist_button, msg='Список воспроизведения', follow=False)
-
     info = Label(root, text=get_flags('songsinplay'), background='salmon', foreground='white', width=3, font=('Times', '6'))
     info.place(x=375, y=161)
     root.resizable(False, False)
     root.focus_force()
-    # add_playlist(root)
     root.mainloop()
