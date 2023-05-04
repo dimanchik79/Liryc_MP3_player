@@ -13,9 +13,45 @@ global SONG_PLAYLIST
 pygame.mixer.init()
 
 
+class get_msgbox():
+    def __init__(self, text, parent_window):
+        self.text, self.parent_window = text, parent_window
+        self.child = Toplevel(parent_window)
+        self.child.resizable(False, False)
+        self.child.title("ВНИМАНИЕ!!!")
+        self.child.config(background="black")
+        w, h = 400, 150
+        sw = self.parent_window.winfo_screenwidth()
+        sh = self.parent_window.winfo_screenheight()
+        x = (sw - w) / 2
+        y = (sh - h) / 2
+        self.child.geometry(f"{w}x{h}+{int(x)}+{int(y)}")
+        self.win_msg_show()
+
+    def win_msg_show(self):
+        self.yesno = False
+        self.msgbox = self.child
+        logo = PhotoImage(file="IMG/attention.png")
+        Label(self.msgbox, image=logo, compound=LEFT, font="Arial 10", text=self.text, background="black",
+              wraplength=250, foreground="yellow").pack(anchor=CENTER)
+        Button(self.msgbox, text="ДА", width=15, command=self.set_yes).place(x=70, y=110)
+        Button(self.msgbox, text="НЕТ", width=15, command=self.set_no).place(x=220, y=110)
+        self.msgbox.focus_set()
+        self.msgbox.grab_set()
+        self.msgbox.wait_window()
+
+    def set_yes(self):
+        self.yesno = True
+        self.msgbox.destroy()
+
+    def set_no(self):
+        self.yesno = False
+        self.msgbox.destroy()
+
+
 def print_info():
-    Label(text=get_flags('songsinplay'), background='salmon', foreground='white', width=3,
-          font=('Times', '6')).place(x=375, y=161)
+    info.configure(text=get_flags('songsinplay'))
+    info.update()
 
 
 def set_back_song():
@@ -188,8 +224,13 @@ def add_song_in_playlist(playlistbox):
                       song.duration]
         CURSOR.execute(sqlite_insert_with_param, new_client)
     BASE_BD.commit()
-
     update_playlist(playlistbox)
+    CURSOR.execute("SELECT * FROM current")
+    row = CURSOR.fetchone()
+    set_flags('song_id', row[7])
+    playlistbox.selection_set(row[7])
+    playlistbox.focus_set()
+
 
     # song = TinyTag.get(song_file)
     # song = TinyTag.get(song_file)
@@ -211,8 +252,7 @@ def update_playlist(playlisttree):
         SONG_PLAYLIST.append([row[0], row[1], row[7], row[5]])
     if SONG_PLAYLIST == []:
         return
-    else:
-        set_flags('count', 0)
+    set_flags('count', 0)
     for delete_row in playlisttree.get_children():
         playlisttree.delete(delete_row)
     songs = []
@@ -241,19 +281,28 @@ def set_flags(name_flag, trigger):
 
 
 def save_playlist(pattern, label):
-    flag = get_flags('flag_entry')
-    if flag == 1:
+    global file_name, save_button
+    if get_flags('flag_entry') == 1:
+        file_name.destroy()
+        save_button.destroy()
+        set_flags('flag_entry', 0)
         return
-    file_name = Entry(pattern, width=30, font="Ariel 8")
-    file_name.place(x=90, y=370)
+    file_name = Entry(pattern, width=25, font="Ariel 8")
+    file_name.place(x=120, y=370)
+    file_name.bind("<Return>", entry_enter_press)
     file_name.insert(0, get_flags('playlist'))
     save_button = Button(pattern, text="ОК", width=3,
-                         command=lambda: press_ok_save(pattern, file_name, save_button, label))
+                         command=lambda: press_ok_save(file_name, save_button, label))
     save_button.place(x=277, y=368)
+    set_flags('flag_entry', 1)
     file_name.focus_set()
 
 
-def press_ok_save(win, filename, savebtn, labelplaylist):
+def entry_enter_press(event):
+    press_ok_save(file_name, save_button, label_playlist)
+
+
+def press_ok_save(filename, savebtn, labelplaylist):
     name = filename.get()
     set_flags(name_flag='playlist', trigger=name)
     set_flags('flag_entry', 0)
@@ -306,7 +355,7 @@ def open_playlist(parent, tree_table, label):
     dy = position[position.index('+') + 1:][position[position.index('+') + 1:].index("+") + 1:]
     shift = int(dy)
     if (805 + int(dx)) > root.winfo_screenwidth():
-        dx = str(int(dx) - 1205)
+        dx = str(int(dx) - 715)
     if shift < 0:
         shift = int(dy)
     win_playlists.geometry(f"310x400+{400 + int(dx)}+{shift}")
@@ -363,15 +412,53 @@ def add_selected_playlist(win, selectlistbox, treetable):
             CURSOR.execute(sqlite_insert_with_param, element)
     BASE_BD.commit()
     update_playlist(treetable)
+    if get_flags('song_id') == 0:
+        CURSOR.execute("SELECT * FROM current")
+        row = CURSOR.fetchone()
+        set_flags('song_id', row[7])
+        treetable.selection_set(row[7])
 
 
 def delete_selected(treelist):
+    if treelist.selection() == ():
+        return
     for element in treelist.selection():
-        print(treelist.index(element))
+        if int(element) != get_flags("song_id"):
+            CURSOR.execute(f"DELETE FROM current WHERE id = {int(element)}")
+    BASE_BD.commit()
+    update_playlist(treelist)
+    treelist.selection_set(get_flags("song_id"))
+
+
+def erase_selected(root, treelist):
+    CURSOR.execute(f"SELECT * FROM current")
+    rows = CURSOR.fetchall()
+    if not rows:
+        return
+    msg = get_msgbox(text=f"Очистить список {get_flags('playlist')}", parent_window=root)
+    if not msg.yesno:
+        return
+    pygame.mixer.music.stop()
+    for row in rows:
+        CURSOR.execute(f"DELETE FROM current WHERE id = {row[7]}")
+    BASE_BD.commit()
+
+    set_flags('first_', 0)
+    set_flags('end_duration', "00:00:00")
+    set_flags('count', 0)
+    set_flags('playlist', "*без названия*")
+    set_flags('song_id', 0)
+    set_flags('duration', 0)
+    set_flags('songsinplay', 0)
+    set_flags("addplay", 0)
+    set_flags("music_play", 0)
+    for delete_row in treelist.get_children():
+        treelist.delete(delete_row)
+    print_info()
 
 
 def add_playlist(parrent):
-    global win_add, tree
+    global win_add, tree, label_playlist
     set_flags("addplay", 1)
     addplayist_button.config(state=DISABLED)
     win_add = Toplevel(parrent)
@@ -408,16 +495,12 @@ def add_playlist(parrent):
     tree.column("#1", stretch=NO, width=310, anchor=W)
     tree.column("#2", stretch=NO, width=50, anchor=E)
     tree.bind("<Return>", keypress_tree_change_song)
-    tree.bind("<KP_Enter>", keypress_tree_change_song)
-    tree.bind("<KP_Enter>", keypress_tree_change_song)
     tree.bind("<Double-ButtonPress-1>", keypress_tree_change_song)
     scrollbar = Scrollbar(frame_two, orient=VERTICAL, command=tree.yview)
     tree["yscrollcommand"] = scrollbar.set
     scrollbar.place(y=0, x=374)
     scrollbar.pack(side="right", fill="y")
-
     update_playlist(tree)
-
     addsonginplaylistpng = PhotoImage(file="IMG/add_songs.png")
     addpsonginlayist_button = Button(win_add, image=addsonginplaylistpng, borderwidth=0, background='black',
                                      activebackground='black', command=lambda: add_song_in_playlist(tree))
@@ -429,6 +512,13 @@ def add_playlist(parrent):
                                  activebackground='black', command=lambda: delete_selected(tree))
     deleteselect_button.place(x=40, y=363)
     ToolTip(deleteselect_button, msg='Удалить из списка выбранные песни', follow=False)
+
+    eraselisitpng = PhotoImage(file="IMG/erase.png")
+    eraselist_button = Button(win_add, image=eraselisitpng, background='black', borderwidth=0,
+                                 activebackground='black', command=lambda: erase_selected(win_add, tree))
+    eraselist_button.place(x=77, y=363)
+    ToolTip(eraselist_button, msg='Очистить список', follow=False)
+
     addplaylistpng = PhotoImage(file="IMG/add_fromfile.png")
     addplaylist_button = Button(win_add, image=addplaylistpng, background='black', borderwidth=0,
                                 activebackground='black', command=lambda: open_playlist(win_add, tree, label_playlist))
@@ -453,6 +543,7 @@ def add_playlist(parrent):
 
 
 def keypress_tree_change_song(event):
+    print(tree.selection())
     if tree.selection() == ():
         return
     tree.tag_configure('yellow', foreground="#BAF300")
@@ -476,7 +567,7 @@ def exit_programm():
 
 
 if __name__ == "__main__":
-    global root, volume_scale, frame_one, addplayist_button
+    global root, volume_scale, frame_one, addplayist_button, info
     POX = 0
     LENGHTSTRING = 0
     SONG_PLAYLIST = []
@@ -553,7 +644,9 @@ if __name__ == "__main__":
                                command=lambda: add_playlist(root))
     addplayist_button.place(x=355, y=163)
     ToolTip(addplayist_button, msg='Список воспроизведения', follow=False)
-    print_info()
+
+    info = Label(root, text=get_flags('songsinplay'), background='salmon', foreground='white', width=3, font=('Times', '6'))
+    info.place(x=375, y=161)
     root.resizable(False, False)
     root.focus_force()
     # add_playlist(root)
