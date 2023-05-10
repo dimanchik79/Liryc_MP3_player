@@ -150,7 +150,7 @@ def play_music():
     progress.place(x=51, y=133)
     label_time = Label(frame_one, text="00:00:00", fg="black", bg="LightSkyBlue3", width=6, font=('Algerian', '9'))
     label_time.place(x=1, y=132)
-    Label(frame_one, text=long_name, bg="LightSkyBlue1", font=('Impact', '11'), width=54).place(x=1, y=5)
+    Label(frame_one, text=long_name, bg="LightSkyBlue1", font=('Courier', '9'), width=54).place(x=1, y=5)
 
     # print("Title:", song.title)
     # print("Artist:",  song.artist)
@@ -180,8 +180,8 @@ def play_time_duration():
     while get_time(pygame.mixer.music.get_pos()) != get_flags('end_duration'):
         pygame.mixer.music.set_volume(volume_scale.get() / 100)
         if get_flags("addplay") == 1:
-            tree.tag_configure('green2', foreground='green2')
-            tree.item(get_flags("song_id"), tag='green2')
+            tree.tag_configure('pink', foreground='pink')
+            tree.item(get_flags("song_id"), tag='pink')
             tree.set(get_flags("song_id"), 1, get_time(pygame.mixer.music.get_pos()))
         progress.config(value=pygame.mixer.music.get_pos())
         progress.update()
@@ -263,7 +263,6 @@ def update_playlist(playlisttree):
     for element in songs:
         if os.path.exists(element[3]):
             playlisttree.insert("", END, iid=str(element[2]), values=element)
-
 
 
 def get_flags(name_flag):
@@ -453,6 +452,7 @@ def erase_selected(root, treelist):
     set_flags("music_play", 0)
     for delete_row in treelist.get_children():
         treelist.delete(delete_row)
+    change_color_labeb(label_playlist)
     print_info()
 
 
@@ -512,7 +512,7 @@ def add_playlist(parrent):
 
     eraselisitpng = PhotoImage(file="IMG/erase.png")
     eraselist_button = Button(win_add, image=eraselisitpng, background='black', borderwidth=0,
-                                 activebackground='black', command=lambda: erase_selected(win_add, tree))
+                              activebackground='black', command=lambda: erase_selected(win_add, tree))
     eraselist_button.place(x=77, y=363)
     ToolTip(eraselist_button, msg='Очистить список', follow=False)
 
@@ -538,7 +538,6 @@ def add_playlist(parrent):
 
 
 def keypress_tree_change_song(event):
-    print(tree.selection())
     if tree.selection() == ():
         return
     tree.tag_configure('yellow', foreground="#BAF300")
@@ -551,10 +550,6 @@ def keypress_tree_change_song(event):
     set_flags('song_id', row[7])
     set_flags('music_play', 0)
     play_music()
-
-
-def setvolume(volumescale):
-    print(volume_scale.get() / 100)
 
 
 def exit_programm():
