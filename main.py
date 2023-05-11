@@ -7,6 +7,7 @@ from tktooltip import ToolTip
 from tinytag import TinyTag
 import sqlite3
 import pygame
+import webbrowser
 
 
 global SONG_PLAYLIST
@@ -169,7 +170,6 @@ def play_music():
     play_time_duration()
 
 
-
 def continue_play_music():
     set_flags('pause', 0)
     pygame.mixer.music.unpause()
@@ -230,7 +230,6 @@ def add_song_in_playlist(playlistbox):
     set_flags('song_id', row[7])
     playlistbox.selection_set(row[7])
     playlistbox.focus_set()
-
 
     # song = TinyTag.get(song_file)
     # song = TinyTag.get(song_file)
@@ -556,6 +555,36 @@ def exit_programm():
     root.destroy()
 
 
+def set_settings(parrent):
+    settings_button.config(state=DISABLED)
+    win_set = Toplevel(parrent)
+    win_set.config(background='black')
+    win_set.title("НАСТРОЙКИ")
+    win_set.protocol("WM_DELETE_WINDOW", lambda: (settings_button.config(state=ACTIVE, activebackground="black"),
+                                                  win_set.destroy()))
+    position = parrent.geometry()
+    dx = position[position.index('+') + 1:][0:position[position.index('+') + 1:].index("+")]
+    dy = position[position.index('+') + 1:][position[position.index('+') + 1:].index("+") + 1:]
+    shift = int(dy) - 230
+    if (805 + int(dx)) > root.winfo_screenwidth():
+        dx = str(int(dx) - 805)
+    if shift < 0:
+        shift = int(dy) + 230
+    win_set.geometry(f"400x200+{int(dx)}+{shift}")
+    Label(win_set, text="Lyric MP3 Player V1.0", width=95, bg="black", fg="Seagreen1").pack(anchor=N)
+    Label(win_set, text="(c) Diman_Chik 2023 All Rights Reserved", width=95, bg="black", fg="Seagreen1").pack(anchor=N)
+    Label(win_set, text="dimanchik.dmitri@yandex.ru", width=95, bg="black", fg="Seagreen1").pack(anchor=N)
+    lbl = Label(win_set, text="https://github.com/dimanchik79/Liryc_MP3_player.git", width=95,
+                bg="black", fg="blue2", cursor="hand2")
+    lbl.pack(anchor=N)
+    lbl.bind("<ButtonPress>", open_url)
+    Label(win_set, text="# TODO", font=("Impact", "20"), bg="black", fg="yellow2").place(y=120, x=160)
+
+
+def open_url(event):
+    webbrowser.open("https://github.com/dimanchik79/Liryc_MP3_player.git", new=0, autoraise=True)
+
+
 if __name__ == "__main__":
     global root, volume_scale, frame_one, addplayist_button, info
     POX = 0
@@ -586,7 +615,7 @@ if __name__ == "__main__":
         set_flags('duration', 0)
     root = Tk()
     ttk.Style().theme_use('winnative')
-    root.title("Лирик MP3 проигрыватель")
+    root.title("Lyric MP3 проигрыватель")
     root.iconbitmap(default="IMG/icon2.ico")
     root.geometry(f"400x200+0+{root.winfo_screenheight() - 300}")
     root.resizable(False, False)
@@ -620,7 +649,8 @@ if __name__ == "__main__":
     next_button.place(x=116, y=163)
     ToolTip(next_button, msg=f"Следующий трек", follow=False)
     settingspng = PhotoImage(file="IMG/settings.png")
-    settings_button = Button(root, image=settingspng, borderwidth=0, background="black", activebackground="black")
+    settings_button = Button(root, image=settingspng, borderwidth=0, background="black", activebackground="black",
+                             command=lambda: set_settings(root))
     settings_button.place(x=363 - 45, y=163)
     ToolTip(settings_button, msg='Настройки', follow=False)
     addplaylistpng = PhotoImage(file="IMG/add_playlist.png")
@@ -628,7 +658,8 @@ if __name__ == "__main__":
                                command=lambda: add_playlist(root))
     addplayist_button.place(x=355, y=163)
     ToolTip(addplayist_button, msg='Список воспроизведения', follow=False)
-    info = Label(root, text=get_flags('songsinplay'), background='salmon', foreground='white', width=3, font=('Times', '6'))
+    info = Label(root, text=get_flags('songsinplay'), background='salmon', foreground='white', width=3,
+                 font=('Times', '6'))
     info.place(x=375, y=161)
     root.resizable(False, False)
     root.focus_force()
