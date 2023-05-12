@@ -231,19 +231,6 @@ def add_song_in_playlist(playlistbox):
     playlistbox.selection_set(row[7])
     playlistbox.focus_set()
 
-    # song = TinyTag.get(song_file)
-    # song = TinyTag.get(song_file)
-    # print("Title:", song.title)
-    # print("Artist:",  song.artist)
-    # print("Genre:", song.genre)
-    # print("Year Released:", song.year)
-    # print("Bitrate:", song.bitrate, "kBits/s")
-    # print("Composer:", song.composer)
-    # print("Filesize:", song.filesize, "bytes")
-    # print("AlbumArtist:", song.albumartist)
-    # print("Duration:", song.duration, "seconds")
-    # print("TrackTotal:",  song.track_total)
-
 
 def update_playlist(playlisttree):
     SONG_PLAYLIST = []
@@ -359,6 +346,9 @@ def open_playlist(parent, tree_table, label):
     win_playlists.geometry(f"310x400+{400 + int(dx)}+{shift}")
     win_playlists.config(background='black')
     win_playlists.title("ВЫБОР СПИСКА ВОСПРОИЗВЕДЕНИЯ")
+    addfromplaylist_button.config(state=DISABLED)
+    win_playlists.protocol("WM_DELETE_WINDOW", lambda: (addfromplaylist_button.config(state=ACTIVE,
+                                                        activebackground="black"), win_playlists.destroy()))
     Label(win_playlists, text="Выделите нужные списки CTRL и SHIFT", width=44,
           background='green', foreground='yellow', relief='groove').place(y=0, x=0)
     select_listbox = Listbox(win_playlists, width=51, height=21, background='black', selectmode=EXTENDED)
@@ -456,7 +446,7 @@ def erase_selected(root, treelist):
 
 
 def add_playlist(parrent):
-    global win_add, tree, label_playlist
+    global win_add, tree, label_playlist, addfromplaylist_button
     set_flags("addplay", 1)
     addplayist_button.config(state=DISABLED)
     win_add = Toplevel(parrent)
@@ -516,10 +506,11 @@ def add_playlist(parrent):
     ToolTip(eraselist_button, msg='Очистить список', follow=False)
 
     addplaylistpng = PhotoImage(file="IMG/add_fromfile.png")
-    addplaylist_button = Button(win_add, image=addplaylistpng, background='black', borderwidth=0,
-                                activebackground='black', command=lambda: open_playlist(win_add, tree, label_playlist))
-    addplaylist_button.place(x=323, y=363)
-    ToolTip(addplaylist_button, msg='Добавить другой список или из другого списка', follow=False)
+    addfromplaylist_button = Button(win_add, image=addplaylistpng, background='black', borderwidth=0,
+                                activebackground='black', command=lambda: open_playlist(win_add, tree,
+                                                                                        label_playlist))
+    addfromplaylist_button.place(x=323, y=363)
+    ToolTip(addfromplaylist_button, msg='Добавить другой список или из другого списка', follow=False)
     saveplaylistpng = PhotoImage(file="IMG/save_playlist.png")
     saveplaylist_button = Button(win_add, image=saveplaylistpng, background='black', borderwidth=0,
                                  activebackground='black', command=lambda: save_playlist(win_add, label_playlist))
@@ -565,12 +556,12 @@ def set_settings(parrent):
     position = parrent.geometry()
     dx = position[position.index('+') + 1:][0:position[position.index('+') + 1:].index("+")]
     dy = position[position.index('+') + 1:][position[position.index('+') + 1:].index("+") + 1:]
-    shift = int(dy) - 230
+    shift = int(dy) - 200
     if (805 + int(dx)) > root.winfo_screenwidth():
         dx = str(int(dx) - 805)
     if shift < 0:
         shift = int(dy) + 230
-    win_set.geometry(f"400x200+{int(dx)}+{shift}")
+    win_set.geometry(f"400x170+{int(dx)}+{shift}")
     Label(win_set, text="Lyric MP3 Player V1.0", width=95, bg="black", fg="Seagreen1").pack(anchor=N)
     Label(win_set, text="(c) Diman_Chik 2023 All Rights Reserved", width=95, bg="black", fg="Seagreen1").pack(anchor=N)
     Label(win_set, text="dimanchik.dmitri@yandex.ru", width=95, bg="black", fg="Seagreen1").pack(anchor=N)
@@ -578,7 +569,7 @@ def set_settings(parrent):
                 bg="black", fg="blue2", cursor="hand2")
     lbl.pack(anchor=N)
     lbl.bind("<ButtonPress>", open_url)
-    Label(win_set, text="# TODO", font=("Impact", "20"), bg="black", fg="yellow2").place(y=120, x=160)
+    Label(win_set, text="# TODO", font=("Impact", "20"), bg="black", fg="yellow2").place(y=105, x=160)
 
 
 def open_url(event):
