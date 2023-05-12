@@ -346,6 +346,7 @@ def open_playlist(parent, tree_table, label):
     win_playlists.geometry(f"310x400+{400 + int(dx)}+{shift}")
     win_playlists.config(background='black')
     win_playlists.title("ВЫБОР СПИСКА ВОСПРОИЗВЕДЕНИЯ")
+
     addfromplaylist_button.config(state=DISABLED)
     win_playlists.protocol("WM_DELETE_WINDOW", lambda: (addfromplaylist_button.config(state=ACTIVE,
                                                         activebackground="black"), win_playlists.destroy()))
