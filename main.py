@@ -1,16 +1,18 @@
 import os.path
 import time
+import sqlite3
+import pygame
+import webbrowser
+import requests
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfilenames
 from tktooltip import ToolTip
 from tinytag import TinyTag
-import sqlite3
-import pygame
-import webbrowser
+from bs4 import BeautifulSoup
 
 
-global SONG_PLAYLIST
+global SONG_PLAYLIST, POSX
 pygame.mixer.init()
 
 
@@ -124,7 +126,7 @@ def new_song_play_settings(end, duration, songid):
 
 
 def play_music():
-    global progress, label_time, runlabel, POX, LENGHTSTRING
+    global progress, label_time, label_news, runlabel, LENGHTSTRING
     if get_flags("music_play") == 1:
         play_time_duration()
         return
@@ -151,6 +153,10 @@ def play_music():
     progress.place(x=51, y=133)
     label_time = Label(frame_one, text="00:00:00", fg="black", bg="LightSkyBlue3", width=6, font=('Algerian', '9'))
     label_time.place(x=1, y=132)
+
+    label_news = Label(frame_one, text=NEWS, fg="black", bg="LightSkyBlue3", font=('Times', '18'))
+    label_news.place(x=400, y=65)
+
     Label(frame_one, text=long_name, bg="LightSkyBlue1", font=('Courier', '9'), width=54).place(x=1, y=5)
 
     # print("Title:", song.title)
@@ -178,6 +184,7 @@ def continue_play_music():
 
 def play_time_duration():
     while get_time(pygame.mixer.music.get_pos()) != get_flags('end_duration'):
+        run_string_news()
         pygame.mixer.music.set_volume(volume_scale.get() / 100)
         if get_flags("addplay") == 1:
             tree.tag_configure('pink', foreground='pink')
@@ -189,6 +196,18 @@ def play_time_duration():
         label_time.update()
     set_flags('music_play', 0)
     next_song()
+
+
+def run_string_news():
+    global POSX
+    label_news.place(x=POSX)
+    label_news.update()
+    time.sleep(0.001)
+    if POSX != len(NEWS) * 8:
+        POSX -= 1
+    else:
+        POSX = 400
+
 
 
 def pause_music():
@@ -505,10 +524,10 @@ def add_playlist(parrent):
     eraselist_button.place(x=77, y=363)
     ToolTip(eraselist_button, msg='Очистить список', follow=False)
 
-    addplaylistpng = PhotoImage(file="IMG/add_fromfile.png")
-    addfromplaylist_button = Button(win_add, image=addplaylistpng, background='black', borderwidth=0,
-                                activebackground='black', command=lambda: open_playlist(win_add, tree,
-                                                                                        label_playlist))
+    addplaylist_png = PhotoImage(file="IMG/add_fromfile.png")
+    addfromplaylist_button = Button(win_add, image=addplaylist_png, background='black', borderwidth=0,
+                                    activebackground='black', command=lambda: open_playlist(win_add, tree,
+                                                                                            label_playlist))
     addfromplaylist_button.place(x=323, y=363)
     ToolTip(addfromplaylist_button, msg='Добавить другой список или из другого списка', follow=False)
     saveplaylistpng = PhotoImage(file="IMG/save_playlist.png")
@@ -577,8 +596,16 @@ def open_url(event):
 
 
 if __name__ == "__main__":
-    global root, volume_scale, frame_one, addplayist_button, info
-    POX = 0
+    global root, volume_scale, frame_one, addplayist_button, info, POSX
+    NEWS = ""
+    link = "https://lenta.ru/parts/news/"
+    respose = requests.get(link).text
+    soup = BeautifulSoup(respose, 'lxml')
+    block = soup.find_all('h3')
+    for row in block:
+        NEWS += row.text + " (РИА НОВОСТИ) ... "
+    print(NEWS)
+    POSX = 400
     LENGHTSTRING = 0
     SONG_PLAYLIST = []
     BASE_BD = sqlite3.connect('playlist.db')
