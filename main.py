@@ -4,6 +4,7 @@ import sqlite3
 import pygame
 import webbrowser
 import requests
+import lxml
 from tkinter import *
 from tkinter import ttk
 from tkinter.filedialog import askopenfilenames
@@ -596,7 +597,7 @@ def open_url(event):
 
 
 if __name__ == "__main__":
-    global root, volume_scale, frame_one, addplayist_button, info, POSX
+    global root, volume_scale, frame_one, addplayist_button, info
     NEWS = ""
     link = "https://lenta.ru/parts/news/"
     respose = requests.get(link).text
